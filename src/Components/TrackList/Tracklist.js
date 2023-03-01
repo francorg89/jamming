@@ -10,7 +10,11 @@ export class TrackList extends Component{
     render(){
 
         let test = this.props.tracks.map(
-            (obj, i) => <Track key={i} track={obj} onAdd={this.props.onAdd}/>
+            (obj, i) => <Track  key={i} 
+                                track={obj} 
+                                onAdd={this.props.onAdd}
+                                onRemove={this.props.onRemove} 
+                                isRemoval={this.props.isRemoval}/>
           );
 
         return (
