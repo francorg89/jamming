@@ -5,6 +5,7 @@ import { Component } from 'react';
 import { SearchBar } from "./../SearchBar/SearchBar"
 import { SearchResults } from './../SearchResults/SearchResults';
 import { Playlist } from '../Playlist/Playlist';
+import { Spotify } from '../../util/Spotify';
 
 
 class App extends Component {
@@ -28,6 +29,8 @@ class App extends Component {
     this.addTrack = this.addTrack.bind(this);
     this.removeTrack = this.removeTrack.bind(this);
     this.updatePlaylistName = this.updatePlaylistName.bind(this);
+    this.savePLaylist = this.savePLaylist.bind(this);
+    this.search = this.search.bind(this);
   }
 
   addTrack(track) {
@@ -42,7 +45,7 @@ class App extends Component {
 
   removeTrack(track){
     let newList = this.state.playlistTracks.filter(
-        (ele)=> ele.id != track.id
+        (ele)=> ele.id !== track.id
     );
     this.setState({playlistTracks: newList});
   }
@@ -51,19 +54,36 @@ class App extends Component {
     this.setState({playlistName: name});
   }
 
+  savePLaylist(){
+    let trackURIs = [];
+    console.log("This is gonna see in terminl");
+    Spotify.getAccesToken();
+  }
+
+  async search(term){
+    console.log(term + " from the app.js");
+    let newSearch = await Spotify.search(term);
+    console.log("New OBJ :")
+    console.log(newSearch);
+    console.log("if prints this we did it")
+    this.setState({searchResults: newSearch });
+  }
+
+
   render(){ 
     return (
     <div>
         <h1>Ja<span className="highlight">mmm</span>ing</h1>
         <div className="App">
-          <SearchBar/>
+          <SearchBar onSearch={this.search}/>
           <div className="App-playlist">
             <SearchResults  searchResults={this.state.searchResults}
                             onAdd ={this.addTrack} />
             <Playlist playlistName={this.state.playlistName} 
                       playlistTracks={this.state.playlistTracks}
                       onRemove={this.removeTrack}
-                      onNameChange={this.updatePlaylistName}/>
+                      onNameChange={this.updatePlaylistName}
+                      onSave={this.savePLaylist}/>
           </div>
         </div>
     </div>
