@@ -1,7 +1,6 @@
 
 
 
-
 const client_id = '86c02dba04e54276ac091792491525eb';
 const redirect_uri = 'http://localhost:3000/';
 const baseSPUrl = "https://api.spotify.com";
@@ -16,7 +15,6 @@ let expTime;
 let Spotify = {
     getAccessToken(){
         if(accessToken){
-            console.log(`Token already obtinend with a value of ${accessToken}`);//ERASE
             return accessToken;
         }
 
@@ -24,19 +22,18 @@ let Spotify = {
 
             accessToken=window.location.href.match(/access_token=([^&]*)/)[1];
             expTime=Number(window.location.href.match(/expires_in=([^&]*)/)[1]);
-            console.log(`Variables are now settled: Token:${accessToken} and :${expTime}`); //ERASE when done
             window.setTimeout(()=> accessToken=undefined,expTime*1000);
             window.history.pushState('Access Token', null, '/');
             return accessToken;
         }else{
          
         console.log("Obviusly this is gonna print ");//ERASE
-        window.location = `https://accounts.spotify.com/authorize?client_id=${client_id}&response_type=token&scope=playlist-modify-public&redirect_uri=${redirect_uri}`;
+        window.location = `https://accounts.spotify.com/authorize?client_id=${client_id}&response_type=token&scope=playlist-modify-public,playlist-modify-private&redirect_uri=${redirect_uri}`;
         }
     },
     search(term){
         const endpoint=`${baseSPUrl}/v1/search?type=track&q=${term}`;
-        const endpoint2=`${baseSPUrl}/v1/me`;
+        
         if(!accessToken)
             accessToken = Spotify.getAccessToken();
         const headers = {
@@ -45,82 +42,81 @@ let Spotify = {
         return fetch(endpoint,headers).
                 then(response=>response.json()).
                 then(jsonResponse => {
+                
                     let array = jsonResponse.tracks.items;
                     let newArray = [];
                 
             
                     for (let i = 0; i<array.length ;i++) 
-                        newArray[i] = {name:array[i].name, artist: array[i].artists[0].name,  album: array[i].album.name, id: array[i].id} 
+                        newArray[i] = {name:array[i].name, artist: array[i].artists[0].name,  album: array[i].album.name, id: array[i].id, uri:array[i].uri}; 
                 
                 
                     
                     return newArray;
             
                 });
+    },
+    savePLaylist(name , uris){
+        if(!accessToken)
+            accessToken = Spotify.getAccessToken();
+        
+        let user_id ;
+        let playlist_id;
+        fetch(`${baseSPUrl}/v1/me`,{headers:{Authorization: `Bearer ${accessToken}`}})
+                    .then(response => {
+                        if(response.ok)
+                            return response.json();
+                        throw new Error("Request failed");
+                    }).then(jsonResponse => {
+                        user_id = jsonResponse.id;
+                        const arg2 = {
+                            headers:{Authorization: `Bearer ${accessToken}`},
+                            method:'POST',
+                            body:JSON.stringify({
+                                "name":name,
+                                "description":"PLaylist made with jamming",
+                                })
+
+                            };
+                        fetch(`${baseSPUrl}/v1/users/${user_id}/playlists`,arg2)
+                            .then(response => {
+                                if(response.ok)
+                                    return response.json();
+                                throw new Error ("Fail to make a playlist")
+
+                            }
+                            ).then(jsonResponse => {
+                                playlist_id = jsonResponse.id;
+                                const arg2 =  { headers:{Authorization: `Bearer ${accessToken}`},
+                                                method:'POST'};
+                                
+                                fetch(`${baseSPUrl}/v1/playlists/${playlist_id}/tracks?uris=${uris}`,arg2)
+                                    .then(response => {
+                                        if(response.ok)
+                                            return response.json();
+                                        throw new Error("Error adding tracks");
+                                    })
+                                    .then(jsonResponse => {
+                                        window.alert("PLaylist created");
+                                        })
+                                    .catch(error => {console.log(error)});
+                                
+                                }
+                            ).catch(error => {console.log(error);});
+                    }).catch(error => {console.log(error);});
+
+    
+
     }
 } /*
     
-     getAccesToken(){
-        console.log("Main call -- ALways Printed");
-        console.log("Token definied? " + (userToken !== undefined));
-        console.log("Token value: "+ userToken);
-        
-        console.log(cont);
-        console.log("----------------");
-        
-        if(userToken){
-            console.log("Variables SET");
-            console.log("Token definied? " + (userToken !== undefined));
-            console.log("Token value: "+ userToken);
-            console.log("Time for expire: "+expTime);
-            console.log("-------Returning token (end here)---------")
-            
-            
-            
-            cont++;
-            
-            return userToken;
-            
-        }
-        
-        console.log("Flag false(no token)")
-        console.log("Token value: " + userToken);
-        console.log("Token undefinied?: " + (userToken === undefined));
-        console.log("--------------------");
-        if(window.location.href.match(/access_token=([^&]*)/) && window.location.href.match(/expires_in=([^&]*)/) ){
-                console.log("token is in the url (Assing time)");
-                let aux;
-                aux = window.location.href.match(/access_token=([^&]*)/);
-                userToken = aux[1];
-                aux = window.location.href.match(/expires_in=([^&]*)/);
-                expTime = aux[1];
-                window.setTimeout(()=> userToken = "", Number(expTime*1000));
-                window.history.pushState("Acces Token",null,"/");
-                console.log("-----------Variables assigned-------------");
-                return userToken;
-        }else{
-                console.log("First scenario: ALL NEW");
-                console.log("Token value: " + userToken);
-                console.log("Token undefinied?: " + (userToken === undefined));
-                console.log("--------------------");
-                
-                window.location= url;
-            }
-
             
             /*
             
 
             
             
-            
-            cont++;
-            
-            
-        
-            
-    },
-
+    
     search(term){
         return new Promise((resolve,reject) =>{
         let endpoint = `${baseSPUrl}/v1/search?type=track&q=${term}`;
