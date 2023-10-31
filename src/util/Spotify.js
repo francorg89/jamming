@@ -2,7 +2,7 @@
 
 
 const client_id = '86c02dba04e54276ac091792491525eb';
-const redirect_uri = 'http://localhost:3000/';
+const redirect_uri = "https://playlistmakerediter.netlify.app/" //'http://localhost:3000/';
 const baseSPUrl = "https://api.spotify.com";
 
 var accessToken;
