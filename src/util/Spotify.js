@@ -39,9 +39,9 @@ let Spotify = {
         const headers = {
             headers:{Authorization: `Bearer ${accessToken}`}
             };
-        return fetch(endpoint,headers).
-                then(response=>response.json()).
-                then(jsonResponse => {
+        return fetch(endpoint,headers)
+                .then(response=>response.json())
+                .then(jsonResponse => {
                 
                     let array = jsonResponse.tracks.items;
                     let newArray = [];
